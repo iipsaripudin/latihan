@@ -1,0 +1,6 @@
+// stdafx.cpp : source file includes hanya standard
+//  Compress.pch jadi header pre-compiled 
+//	stdafx.obj akan berisi informasi type pre-compiled
+
+#include "stdafx.h"
+
