@@ -1,0 +1,13 @@
+// RunLength.h
+//
+//////////////////////////////////////////////////////////////////////
+
+#if _MSC_VER > 1000
+#pragma once
+#endif // _MSC_VER > 1000
+
+bool CompressRunLength(BYTE *pSrc, int nSrcLen, BYTE *&pDes, int &nDesLen, int nBitsPerSample, void* nRuns, int nRunCount, int nRunSize);
+bool DecompressRunLength(BYTE *pSrc, int nSrcLen, BYTE *&pDes, int &nDesLen);
+
+
+
