@@ -1,0 +1,218 @@
+// CompressDlg.cpp : implementation file
+//
+
+#include "stdafx.h"
+#include "CompressDemo.h"
+#include "CompressDlg.h"
+#include "RunLength.h"
+
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <io.h>
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+// CCompressDlg dialog
+
+CCompressDlg::CCompressDlg(CWnd* pParent /*=NULL*/)
+  : CDialog(CCompressDlg::IDD, pParent)
+{
+	//{{AFX_DATA_INIT(CCompressDlg)
+	m_nComboAlgorithm = AfxGetApp()->GetProfileInt("Options", "Algorithm", 0);
+	m_strPTFile = AfxGetApp()->GetProfileString("Options", "Source file");
+	m_strCTFile = AfxGetApp()->GetProfileString("Options", "Compressed file");
+	m_strDPTFile = AfxGetApp()->GetProfileString("Options", "Decompressed file");
+	m_nBitsPerSample = AfxGetApp()->GetProfileInt("Options", "Bits per sample", 0);
+	//}}AFX_DATA_INIT
+	// Perhatikan bahwa LoadIcon tidak memerlukan DestroyIcon berikutnya di Win32
+	m_hIcon = AfxGetApp () -> LoadIcon (IDR_MAINFRAME);
+}
+
+void CCompressDlg::DoDataExchange(CDataExchange* pDX)
+{
+	CDialog::DoDataExchange(pDX);
+	//{{AFX_DATA_MAP(CCompressDlg)
+	DDX_CBIndex(pDX, IDC_COMBO1, m_nComboAlgorithm);
+	DDX_CBIndex(pDX, IDC_COMBO2, m_nBitsPerSample);
+	DDX_Text(pDX, IDC_EDIT1, m_strPTFile);
+	DDX_Text(pDX, IDC_EDIT2, m_strCTFile);
+	DDX_Text(pDX, IDC_EDIT3, m_strDPTFile);
+	//}}AFX_DATA_MAP
+	DDX_Control(pDX, IDC_COMBO2, m_comboBitsPerSample);
+}
+
+BEGIN_MESSAGE_MAP(CCompressDlg, CDialog)
+	//{{AFX_MSG_MAP(CCompressDlg)
+	ON_WM_PAINT()
+	ON_WM_QUERYDRAGICON()
+	ON_BN_CLICKED(IDC_DECompress, OnDecompress)
+	ON_BN_CLICKED(IDC_PTF_BROWSE, OnPTFBrowse)
+	ON_BN_CLICKED(IDC_CTF_BROWSE, OnCTFBrowse)
+	ON_BN_CLICKED(IDC_DPTF_BROWSE, OnDPTFBrowse)
+	ON_WM_DESTROY()
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+/////////////////////////////////////////////////////////////////////////////
+// CCompressDlg penangan pesan
+
+BOOL CCompressDlg::OnInitDialog()
+{
+	CDialog::OnInitDialog();
+
+	// Mengatur ikon untuk dialog ini. Kerangka kerja melakukan ini secara otomatis
+	//  ketika jendela utama aplikasi bukanlah dialog
+	SetIcon(m_hIcon, TRUE);			// Set big icon
+	SetIcon(m_hIcon, FALSE);		// Set small icon
+	
+	CString str;
+	for(int n = 5; n < 32; n++)
+	{
+		str.Format("%d bits - %u samples", n, 1 << n);
+		m_comboBitsPerSample.AddString(str);
+	}
+	m_comboBitsPerSample.SetCurSel(m_nBitsPerSample);
+	
+	return TRUE;  // return TRUE  unless you set the focus to a control
+}
+
+// Jika Anda menambahkan sebuah tombol untuk meminimalkan dialog Anda, Anda akan memerlukan kode di bawah
+// untuk menarik ikon. Untuk aplikasi MFC menggunakan dokumen / model tampilan,
+//  ini secara otomatis dilakukan untuk Anda oleh kerangka kerja.
+
+void CCompressDlg::OnPaint() 
+{
+	if (IsIconic())
+	{
+		CPaintDC dc(this); // device context for painting
+
+		SendMessage(WM_ICONERASEBKGND, (WPARAM) dc.GetSafeHdc(), 0);
+
+		// Pusat ikon di klien persegi panjang
+		int cxIcon = GetSystemMetrics(SM_CXICON);
+		int cyIcon = GetSystemMetrics(SM_CYICON);
+		CRect rect;
+		GetClientRect(&rect);
+		int x = (rect.Width() - cxIcon + 1) / 2;
+		int y = (rect.Height() - cyIcon + 1) / 2;
+
+		// Menggambar Icon
+		dc.DrawIcon(x, y, m_hIcon);
+	}
+	else
+	{
+		CDialog::OnPaint();
+	}
+}
+
+// Sistem panggilan ini untuk mendapatkan kursor untuk menampilkan sementara pengguna menyeret
+//  jendela diminimalkan
+HCURSOR CCompressDlg::OnQueryDragIcon()
+{
+	return (HCURSOR) m_hIcon;
+}
+
+void Compress(LPCSTR lpcsSrcFile, LPCSTR lpcsDesFile, bool bCompress, int nBitsPerSample = 12)
+{
+	int nFile = _open(lpcsSrcFile, _O_RDONLY|_O_BINARY, 0);
+	int nFileLength = _filelength(nFile);
+	BYTE *pFileBuffer = new BYTE[nFileLength];
+	_read(nFile, pFileBuffer, nFileLength);
+	_close(nFile);
+
+	// kompres atau dekompresi buffer file
+	BYTE *pDes;
+	int nDesLen;
+	DWORD dw = ::GetTickCount();
+	if(bCompress)
+		CompressRunLength(pFileBuffer, nFileLength, pDes, nDesLen, nBitsPerSample, NULL, 0, 0);
+	else
+		DecompressRunLength(pFileBuffer, nFileLength, pDes, nDesLen);
+	dw = ::GetTickCount() - dw;
+	delete pFileBuffer;
+
+	_unlink(lpcsDesFile);
+	// open destination buffer
+	nFile = _open(lpcsDesFile, _O_CREAT|_O_BINARY|_O_WRONLY, _S_IREAD|_S_IWRITE);
+	// write file buffer
+	_write(nFile, pDes, nDesLen);
+	_close(nFile);
+
+	free(pDes);
+
+	CString str;
+	str.Format("Elapsed time: %d ms", dw);
+	AfxMessageBox(str);
+}
+
+void CCompressDlg::OnOK() 
+{
+	UpdateData(TRUE);
+
+	Compress(m_strPTFile, m_strCTFile, true, m_nBitsPerSample+5);
+}
+
+void CCompressDlg::OnDecompress() 
+{
+	UpdateData(TRUE);
+
+	Compress(m_strCTFile, m_strDPTFile, false);
+}
+
+void CCompressDlg::OnPTFBrowse() 
+{
+	UpdateData(TRUE);
+
+	CFileDialog dlg(TRUE, "", m_strPTFile, OFN_EXPLORER, "All Files (*.*) | *.*; ||", this);
+	dlg.m_ofn.lpstrTitle = "Choose file to be Compressed";
+	if(dlg.DoModal() != IDOK)
+		return;
+	m_strPTFile = dlg.GetPathName();
+
+	UpdateData(FALSE);
+}
+
+void CCompressDlg::OnCTFBrowse() 
+{
+	UpdateData(TRUE);
+
+	CFileDialog dlg(FALSE, "", m_strCTFile, OFN_EXPLORER, "All Files (*.*) | *.*; ||", this);
+	dlg.m_ofn.lpstrTitle = "Choose file to be decompressed";
+	if(dlg.DoModal() != IDOK)
+		return;
+	m_strCTFile = dlg.GetPathName();
+
+	UpdateData(FALSE);
+}
+
+void CCompressDlg::OnDPTFBrowse() 
+{
+	UpdateData(TRUE);
+
+	CFileDialog dlg(FALSE, "", m_strDPTFile, OFN_EXPLORER, "All Files (*.*) | *.*; ||", this);
+	dlg.m_ofn.lpstrTitle = "Choose decompressed file";
+	if(dlg.DoModal() != IDOK)
+		return;
+	m_strDPTFile = dlg.GetPathName();
+
+	UpdateData(FALSE);
+}
+
+void CCompressDlg::OnDestroy() 
+{
+	UpdateData(TRUE);
+
+	AfxGetApp()->WriteProfileInt("Options", "Algorithm", m_nComboAlgorithm);
+	AfxGetApp()->WriteProfileInt("Options", "Bits per sample", m_nBitsPerSample);
+	AfxGetApp()->WriteProfileString("Options", "Source file", m_strPTFile);
+	AfxGetApp()->WriteProfileString("Options", "Compressed file", m_strCTFile);
+	AfxGetApp()->WriteProfileString("Options", "Decompressed file", m_strDPTFile);
+
+	CDialog::OnDestroy();	
+}
+
