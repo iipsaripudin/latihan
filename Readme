@@ -1,0 +1,79 @@
+   MICROSOFT DASAR KELAS library: Compress
+================================================== ======================
+
+
+Aplikasi ini
+tidak hanya menunjukkan dasar-dasar menggunakan Microsoft kelas Dasar
+tetapi juga merupakan titik awal untuk menulis aplikasi
+
+File ini berisi ringkasan dari apa yang akan menemukan di setiap file yang
+aplikasi Compress.
+
+Compress.dsp
+    Ini file (file proyek) berisi informasi pada tingkat proyek dan
+    digunakan untuk membangun sebuah proyek tunggal atau sub-proyek. Pengguna lain dapat berbagi
+    proyek (. dsp) file, tetapi mereka harus mengekspor makefiles lokal.
+
+Compress.h
+    Ini adalah file header utama untuk aplikasi. Ini mencakup lainnya
+    proyek tertentu header (termasuk Resource.h) dan menyatakan
+    CCompressApp aplikasi kelas.
+
+Compress.cpp
+    Ini adalah sumber file aplikasi utama yang berisi aplikasi
+    Kelas CCompressApp.
+
+Compress.rc
+    Ini adalah daftar dari semua Microsoft Windows. Ini termasuk ikon, bitmap, dan kursor yang disimpan
+    dalam RES subdirektori. File ini dapat langsung diedit di Microsoft
+Visual C + +.
+
+Compress.clw
+    File ini berisi informasi yang digunakan oleh ClassWizard untuk mengedit yang sudah ada
+    Kelas atau menambah kelas baru. ClassWizard juga menggunakan file ini untuk menyimpan
+    informasi yang diperlukan untuk membuat dan mengedit peta pesan dan data dialog
+    peta dan menciptakan prototipe fungsi anggota.
+
+res \ Compress.ico
+    Ini adalah file icon, yang digunakan sebagai ikon aplikasi. Ini
+    ikon disertakan oleh Compress.rc file sumber daya utama.
+
+res \ Compress.rc2
+    File ini berisi sumber daya yang tidak diedit oleh Microsoft
+Visual C + +. Anda harus menempatkan semua sumber daya tidak dapat diedit oleh
+editor sumber daya dalam file ini.
+
+
+
+
+/ / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+
+AppWizard menciptakan satu kelas dialog:
+
+CompressDlg.h, CompressDlg.cpp - dialog
+    File-file ini mengandung kelas CCompressDlg Anda. Kelas ini mendefinisikan
+    perilaku dialog utama aplikasi Anda. Dialog ini
+    template adalah di Compress.rc, yang dapat diedit di Microsoft
+Visual C + +.
+
+
+/ / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+Lainnya standar file:
+
+Stdafx.h, StdAfx.cpp
+    File-file ini digunakan untuk membangun sebuah header dikompilasi (PCH) file
+    Compress.pch bernama dan jenis dikompilasi mengajukan StdAfx.obj bernama.
+
+Resource.h
+    Ini adalah file header standar, yang mendefinisikan ID sumber daya baru.
+    Microsoft Visual C + + dibaca dan update file ini.
+
+/ / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+Catatan lain:
+
+AppWizard menggunakan "TODO:" untuk menunjukkan bagian-bagian dari kode sumber Anda
+harus menambah atau menyesuaikan.
+
+
+
+/ / / / / / / /
